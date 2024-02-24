@@ -5,8 +5,10 @@ const app = express();
 const User = require('./models/user.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 
 app.use(express.json());
+app.use(cookieParser());
 
 const jwtSecret = "asfhasjkfhlkjahdfuoiwemintipopu"
 
@@ -32,14 +34,13 @@ app.post('/register', async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-    console.log(hashedPassword);
+
 
     try {
         const newUser = new User({ name, email, password: hashedPassword });
         await newUser.save();
         res.json(newUser);
     } catch (e) {
-        console.log("Error Encountered")
         res.status(422).json(e);
     }
 })
@@ -52,14 +53,31 @@ app.post('/login', async (req, res) => {
         if (result) {
             jwt.sign({ email: userData.email, id: userData._id }, jwtSecret, {}, (err, token) => {
                 if (err) throw err;
-                res.cookie('token', token).json('pass ok')
+                res.cookie('token', token).json(userData);
             });
+        }
+        else {
+            res.status(422).json('pass not ok')
         }
     }
     else {
-        res.json("not present");
+        res.status(404).json("not present");
     }
-    console.log(userData);
 
 })
+
+app.get('/profile', (req, res) => {
+    const { token } = req.cookies;
+    if (token) {
+        jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+            if (err) throw err;
+            const { name, email, _id } = await User.findById(userData.id)
+            res.json({ name, email, _id });
+        })
+    }
+    else {
+        res.json(null);
+    }
+})
+
 app.listen(4000);
