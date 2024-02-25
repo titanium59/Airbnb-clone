@@ -63,7 +63,10 @@ app.post('/login', async (req, res) => {
     else {
         res.status(404).json("not present");
     }
+})
 
+app.post('/logout', (req, res) => {
+    res.cookie('token', '').json(true);
 })
 
 app.get('/profile', (req, res) => {
