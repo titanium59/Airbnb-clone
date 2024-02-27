@@ -10,6 +10,8 @@ const imageDownloader = require('image-downloader');
 
 app.use(express.json());
 app.use(cookieParser());
+app.use('/uploads', express.static(__dirname + '/uploads'))
+
 
 const jwtSecret = "asfhasjkfhlkjahdfuoiwemintipopu"
 
