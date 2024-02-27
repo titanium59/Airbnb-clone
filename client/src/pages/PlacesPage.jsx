@@ -30,6 +30,7 @@ export default function PlacesPage() {
         setAddedPhotos(prev => {
             return [...prev, filename]
         })
+        setPhotoLink('');
     }
 
     return (
@@ -60,12 +61,14 @@ export default function PlacesPage() {
                         {inputHeader("Photos")}
                         <div className="flex gap-2">
                             <input type="text" placeholder="Add using link" value={photoLink} onChange={ev => setPhotoLink(ev.target.value)}
-
                             />
                             <button className="bg-gray-200 px-4 rounded-2xl" onClick={addPhotoByLink} >Add&nbsp;photo</button>
                         </div>
 
                         <div className="mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                            {addedPhotos.length > 0 && addedPhotos.map(link => (
+                                <div>{link}</div>
+                            ))}
                             <button className="border bg-transparent rounded-2xl p-8 text-2xl text-gray-600">+</button>
 
                         </div>
