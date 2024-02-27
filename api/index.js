@@ -3,6 +3,7 @@ const cors = require('cors');
 const { default: mongoose } = require('mongoose');
 const app = express();
 const User = require('./models/user.js');
+const Place = require('./models/place.js')
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
@@ -39,7 +40,6 @@ app.post('/register', async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
-
 
     try {
         const newUser = new User({ name, email, password: hashedPassword });
@@ -114,6 +114,33 @@ app.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
         uploadedFiles.push(newPath.replace('uploads\\', ''));
     }
     res.json(uploadedFiles);
+});
+
+app.post('/places', (req, res) => {
+    const { token } = req.cookies;
+
+    const { title, address, addedPhotos, description,
+        perks, extraInfo, checkInTime, checkOutTime, guests } = req.body;
+
+    jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+        if (err) throw err;
+        const newPlace = new Place({
+            owner: userData.id,
+            title,
+            address,
+            photos: addedPhotos,
+            description,
+            perks,
+            extraInfo,
+            checkIn: checkInTime,
+            checkOut: checkOutTime,
+            maxGuests: guests
+        })
+        await newPlace.save();
+        res.json(newPlace);
+    })
+
+
 })
 
 app.listen(4000);
