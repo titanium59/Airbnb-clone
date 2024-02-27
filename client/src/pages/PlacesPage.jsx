@@ -26,11 +26,27 @@ export default function PlacesPage() {
 
     async function addPhotoByLink(evt) {
         evt.preventDefault();
-        const { data: filename } = await axios.post('/upload-by-link', { link: photoLink })
+        const { data: filenames } = await axios.post('/upload-by-link', { link: photoLink })
         setAddedPhotos(prev => {
-            return [...prev, filename]
+            return [...prev, ...filenames]
         })
         setPhotoLink('');
+    }
+
+    function uploadPhoto(ev) {
+        const files = ev.target.files;
+        const data = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            data.append('photos', files[i]);
+        }
+        axios.post('/upload', data, {
+            headers: { 'Content-type': 'multipart/form-data' }
+        }).then(response => {
+            const { data: filename } = response;
+            setAddedPhotos(prev => {
+                return [...prev, ...filename]
+            })
+        })
     }
 
     return (
@@ -65,11 +81,19 @@ export default function PlacesPage() {
                             <button className="bg-gray-200 px-4 rounded-2xl" onClick={addPhotoByLink} >Add&nbsp;photo</button>
                         </div>
 
-                        <div className="mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+
+
+                        <div className="mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                             {addedPhotos.length > 0 && addedPhotos.map(link => (
-                                <img src={"http://localhost:4000/uploads/" + link} alt="" />
+                                <div className="h-32 flex">
+
+                                    <img className="rounded-2xl w-full object-cover" src={"http://localhost:4000/uploads/" + link} alt="" />
+                                </div>
+
                             ))}
-                            <button className="border bg-transparent rounded-2xl p-8 text-2xl text-gray-600">+</button>
+                            <label className="border h-32 cursor-pointer flex items-center justify-center bg-transparent rounded-2xl  text-2xl text-gray-600">
+                                <input type="file" multiple className="hidden" onChange={uploadPhoto} />
+                                +</label>
 
                         </div>
 

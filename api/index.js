@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const imageDownloader = require('image-downloader');
+const multer = require('multer')
+const fs = require('fs')
 
 app.use(express.json());
 app.use(cookieParser());
@@ -86,8 +88,6 @@ app.get('/profile', (req, res) => {
     }
 })
 
-console.log(__dirname);
-
 app.post('/upload-by-link', async (req, res) => {
     const { link } = req.body;
 
@@ -97,6 +97,23 @@ app.post('/upload-by-link', async (req, res) => {
         dest: __dirname + '/uploads/' + newName,
     });
     res.json(newName)
+})
+
+
+const photosMiddleware = multer({ dest: 'uploads/' });
+
+app.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
+
+    const uploadedFiles = []
+    for (let i = 0; i < req.files.length; i++) {
+        const { path, originalname } = req.files[i];
+        const parts = originalname.split('.');
+        const ext = parts[parts.length - 1]
+        const newPath = path + '.' + ext;
+        fs.renameSync(path, newPath);
+        uploadedFiles.push(newPath.replace('uploads\\', ''));
+    }
+    res.json(uploadedFiles);
 })
 
 app.listen(4000);
