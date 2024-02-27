@@ -6,6 +6,7 @@ const User = require('./models/user.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
+const imageDownloader = require('image-downloader');
 
 app.use(express.json());
 app.use(cookieParser());
@@ -81,6 +82,19 @@ app.get('/profile', (req, res) => {
     else {
         res.json(null);
     }
+})
+
+console.log(__dirname);
+
+app.post('/upload-by-link', async (req, res) => {
+    const { link } = req.body;
+
+    const newName = 'photo' + Date.now() + '.jpg';
+    await imageDownloader.image({
+        url: link,
+        dest: __dirname + '/uploads/' + newName,
+    });
+    res.json(newName)
 })
 
 app.listen(4000);
