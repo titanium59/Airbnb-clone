@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Perks from "./Perks";
 import PhotosUploader from "./PhotosUploader";
 import axios from "axios";
 import AccountNavigation from "../AccountNavigation";
-import { Navigate } from "react-router";
+import { Navigate, useParams } from "react-router";
 
 export default function PlacesFormPage() {
+
+    const { id } = useParams();
 
     const [title, setTitle] = useState('');
     const [address, setAddress] = useState('');
@@ -18,20 +20,47 @@ export default function PlacesFormPage() {
     const [guests, setGuests] = useState(1);
     const [redirect, setRedirect] = useState(false);
 
+    useEffect(() => {
+        if (!id) {
+            return;
+        }
+        axios.get('/places/' + id).then(response => {
+            const { data } = response;
+            setTitle(data.title);
+            setAddress(data.address);
+            setAddedPhotos(data.photos);
+            setDescription(data.description);
+            setPerks(data.perks);
+            setExtraInfo(data.extraInfo);
+            setCheckInTime(data.checkIn);
+            setCheckOutTime(data.checkOutTime);
+            setGuests(data.maxGuests);
+        });
+    }, [id])
+
     function inputHeader(text) {
         return (
             <h2 className="text-xl mt-4">{text}</h2>
         )
     }
 
-    async function addNewPlace(evt) {
+    async function savePlace(evt) {
         evt.preventDefault();
-        await axios.post('/places', {
+        const placeData = {
             title, address, addedPhotos,
             description, perks, extraInfo,
             checkInTime, checkOutTime, guests
-        });
-        setRedirect(true);
+        }
+        if (id) {
+            await axios.put('/places', {
+                id,
+                ...placeData
+            });
+            setRedirect(true);
+        } else {
+            await axios.post('/places', placeData);
+            setRedirect(true);
+        }
     }
 
     if (redirect) {
@@ -41,7 +70,7 @@ export default function PlacesFormPage() {
     return (
         <div>
             <AccountNavigation />
-            <form onSubmit={addNewPlace}>
+            <form onSubmit={savePlace}>
 
                 {inputHeader("Title")}
                 <input type="text" placeholder="title, for example: My lovely apt" value={title} onChange={ev => setTitle(ev.target.value)} />
