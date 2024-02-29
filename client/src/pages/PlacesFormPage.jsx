@@ -19,6 +19,7 @@ export default function PlacesFormPage() {
     const [checkOutTime, setCheckOutTime] = useState(1);
     const [guests, setGuests] = useState(1);
     const [redirect, setRedirect] = useState(false);
+    const [price, setPrice] = useState(0);
 
     useEffect(() => {
         if (!id) {
@@ -35,6 +36,7 @@ export default function PlacesFormPage() {
             setCheckInTime(data.checkIn);
             setCheckOutTime(data.checkOutTime);
             setGuests(data.maxGuests);
+            setPrice(data.price);
         });
     }, [id])
 
@@ -49,7 +51,8 @@ export default function PlacesFormPage() {
         const placeData = {
             title, address, addedPhotos,
             description, perks, extraInfo,
-            checkInTime, checkOutTime, guests
+            checkInTime, checkOutTime, guests,
+            price
         }
         if (id) {
             await axios.put('/places', {
@@ -121,6 +124,14 @@ export default function PlacesFormPage() {
                             type="number"
                             placeholder="5"
                             value={guests} onChange={ev => setGuests(ev.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <h3 className="mt-2 -mb-1">Price per night</h3>
+                        <input
+                            type="number"
+                            placeholder="5"
+                            value={price} onChange={ev => setPrice(ev.target.value)}
                         />
                     </div>
                 </div>

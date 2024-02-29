@@ -120,7 +120,7 @@ app.post('/places', (req, res) => {
     const { token } = req.cookies;
 
     const { title, address, addedPhotos, description,
-        perks, extraInfo, checkInTime, checkOutTime, guests } = req.body;
+        perks, extraInfo, checkInTime, checkOutTime, guests, price } = req.body;
 
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
         if (err) throw err;
@@ -134,16 +134,19 @@ app.post('/places', (req, res) => {
             extraInfo,
             checkIn: checkInTime,
             checkOut: checkOutTime,
-            maxGuests: guests
+            maxGuests: guests,
+            price
         })
         await newPlace.save();
         res.json(newPlace);
     })
-
-
 })
 
-app.get('/places', (req, res) => {
+app.get('/places', async (req, res) => {
+    res.json(await Place.find());
+})
+
+app.get('/user-places', (req, res) => {
     const { token } = req.cookies;
     jwt.verify(token, jwtSecret, {}, async (err, userData) => {
         if (err) throw err;
@@ -165,7 +168,7 @@ app.put('/places', async (req, res) => {
     const { token } = req.cookies;
 
     const { id, title, address, addedPhotos, description,
-        perks, extraInfo, checkInTime, checkOutTime, guests } = req.body;
+        perks, extraInfo, checkInTime, checkOutTime, guests, price } = req.body;
 
     console.log(id);
 
@@ -173,7 +176,6 @@ app.put('/places', async (req, res) => {
         if (err) throw err;
         const oldPlace = await Place.findById(id);
         if (userData.id === oldPlace.owner.toString()) {
-
 
             await Place.findByIdAndUpdate(id, {
                 title,
@@ -184,13 +186,13 @@ app.put('/places', async (req, res) => {
                 extraInfo,
                 checkIn: checkInTime,
                 checkOut: checkOutTime,
-                maxGuests: guests
+                maxGuests: guests,
+                price
             });
             res.json("successful");
 
         }
     })
-
 
 })
 
