@@ -1,11 +1,13 @@
 import { useState } from "react"
-import { Link } from "react-router-dom"
+import { Link, Navigate } from "react-router-dom"
 import axios from 'axios'
 
 export default function RegisterForm() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [redirect, setRedirect] = useState('');
+
 
     async function registerUser(ev) {
         ev.preventDefault();
@@ -15,10 +17,17 @@ export default function RegisterForm() {
                 email,
                 password
             });
+            setRedirect('/')
         } catch {
             alert('Something went wrong');
         }
 
+    }
+
+    if (redirect) {
+        return (
+            <Navigate to={redirect} />
+        )
     }
 
     return (
