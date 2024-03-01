@@ -2,21 +2,22 @@ const express = require('express');
 const cors = require('cors');
 const { default: mongoose } = require('mongoose');
 const app = express();
-const User = require('./models/user.js');
-const Place = require('./models/place.js')
+const User = require('./models/User.js');
+const Place = require('./models/Place.js');
+const Booking = require('./models/booking.js');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const imageDownloader = require('image-downloader');
-const multer = require('multer')
-const fs = require('fs')
+const multer = require('multer');
+const fs = require('fs');
 
 app.use(express.json());
 app.use(cookieParser());
-app.use('/uploads', express.static(__dirname + '/uploads'))
+app.use('/uploads', express.static(__dirname + '/uploads'));
 
 
-const jwtSecret = "asfhasjkfhlkjahdfuoiwemintipopu"
+const jwtSecret = "asfhasjkfhlkjahdfuoiwemintipopu";
 
 app.use(cors({
     credentials: true,
@@ -30,6 +31,18 @@ db.on("error", console.error.bind(console, "connection eroor: "));
 db.once("open", () => {
     console.log("database connected")
 })
+
+function getUserDataFromToken(req) {
+
+    return new Promise((resolve, reject) => {
+        jwt.verify(req.cookies.token, jwtSecret, {}, async (err, userData) => {
+            if (err) throw err;
+            resolve(userData)
+        });
+    })
+
+
+}
 
 app.get('/test', (req, res) => {
     res.send("Hello")
@@ -193,6 +206,32 @@ app.put('/places', async (req, res) => {
 
         }
     })
+
+})
+
+app.post('/bookings', async (req, res) => {
+
+    const userData = await getUserDataFromToken(req);
+
+    const { place, checkIn, checkOut,
+        numberOfGuests, name, mobile
+    } = req.body;
+    const newBooking = new Booking({
+        place,
+        user: userData.id,
+        checkIn: new Date(checkIn),
+        checkOut: new Date(checkOut),
+        numberOfGuests,
+        name,
+        mobile
+    })
+    newBooking.save();
+    res.json(newBooking);
+})
+
+app.get('/bookings', async (req, res) => {
+    const userData = await getUserDataFromToken(req);
+    res.json(await Booking.find({ user: userData.id }).populate('place'));
 
 })
 
